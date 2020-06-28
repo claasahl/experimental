@@ -27,8 +27,12 @@ async function getData(): Promise<MatchboxCar[]> {
         horsepower: car.Horsepower,
     }))
         .filter(car => (car.mpg != null && car.horsepower != null));
+    cleaned;
+    const xs = tf.linspace(-1, 1, 200);
+    const data = xs.arraySync().map(x => ({mpg: 4*x, horsepower: x}))
+    // const data = xs.arraySync().map(x => ({mpg: x*x, horsepower: x}))
 
-    return cleaned;
+    return data;
 }
 
 function createModel(): tf.LayersModel {
@@ -37,6 +41,10 @@ function createModel(): tf.LayersModel {
 
     // Add a single input layer
     model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }));
+    // model.add(tf.layers.dense({units: 50, activation: 'sigmoid'}));
+    // model.add(tf.layers.dense({units: 5, activation: 'sigmoid'}));
+    // model.add(tf.layers.dense({units: 5, activation: 'sigmoid'}));
+    // model.add(tf.layers.dense({units: 5, activation: 'sigmoid'}));
 
     // Add an output layer
     model.add(tf.layers.dense({ units: 1, useBias: true }));
@@ -95,12 +103,12 @@ async function trainModel(model: tf.LayersModel, inputs: tf.Tensor<tf.Rank>, lab
     });
 
     const batchSize = 32;
-    const epochs = 50;
+    const epochs = 150;
 
     return await model.fit(inputs, labels, {
         batchSize,
         epochs,
-        shuffle: true,
+        shuffle: false,
         callbacks: tfvis.show.fitCallbacks(
             { name: 'Training Performance' },
             ['loss', 'mse'],
@@ -109,7 +117,7 @@ async function trainModel(model: tf.LayersModel, inputs: tf.Tensor<tf.Rank>, lab
     });
 }
 
-function testModel(model: tf.LayersModel, inputData: MatchboxCar[], normalizationData: Intermediate) {
+async function testModel(model: tf.LayersModel, inputData: MatchboxCar[], normalizationData: Intermediate) {
     const { inputMax, inputMin, labelMin, labelMax } = normalizationData;
 
     // Generate predictions for a uniform range of numbers between 0 and 1;
@@ -143,7 +151,7 @@ function testModel(model: tf.LayersModel, inputData: MatchboxCar[], normalizatio
     }));
 
 
-    tfvis.render.scatterplot(
+    await tfvis.render.scatterplot(
         { name: 'Model Predictions vs Original Data' },
         { values: [originalPoints, predictedPoints], series: ['original', 'predicted'] },
         {
@@ -186,7 +194,10 @@ async function run() {
 
     // Make some predictions using the model and compare them to the
     // original data
-    testModel(model, data, tensorData);
+    await testModel(model, data, tensorData);
+    
+    // Save model
+    await model.save("downloads://linear")
 }
 
 document.addEventListener('DOMContentLoaded', run);
