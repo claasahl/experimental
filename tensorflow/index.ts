@@ -118,13 +118,14 @@ function testModel(model: tf.LayersModel, inputData: MatchboxCar[], normalizatio
     const [xs, preds] = tf.tidy(() => {
 
         const xs = tf.linspace(0, 1, 100);
-        const preds = model.predict(xs.reshape([100, 1]));
+        const inputs = xs.reshape([100, 1]);
+        const preds = model.predict(inputs) as tf.Tensor;
 
         const unNormXs = xs
             .mul(inputMax.sub(inputMin))
             .add(inputMin);
 
-        const unNormPreds = (preds as any)
+        const unNormPreds = preds
             .mul(labelMax.sub(labelMin))
             .add(labelMin);
 
