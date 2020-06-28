@@ -1,4 +1,5 @@
-import { render } from "@tensorflow/tfjs-vis"
+import * as tf from "@tensorflow/tfjs"
+import * as tfvis from "@tensorflow/tfjs-vis"
 
 interface MatchboxCar {
     mpg: number;
@@ -21,6 +22,19 @@ async function getData(): Promise<MatchboxCar[]> {
     return cleaned;
 }
 
+function createModel() {
+    // Create a sequential model
+    const model = tf.sequential();
+
+    // Add a single input layer
+    model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }));
+
+    // Add an output layer
+    model.add(tf.layers.dense({ units: 1, useBias: true }));
+
+    return model;
+}
+
 async function run() {
     // Load and plot the original input data that we are going to train on.
     const data = await getData();
@@ -29,7 +43,7 @@ async function run() {
         y: d.mpg,
     }));
 
-    render.scatterplot(
+    tfvis.render.scatterplot(
         { name: 'Horsepower v MPG' },
         { values },
         {
@@ -38,6 +52,10 @@ async function run() {
             height: 300
         }
     );
+
+    // Create the model
+    const model = createModel();
+    tfvis.show.modelSummary({ name: 'Model Summary' }, model);
 
     // More code will be added below
 }
