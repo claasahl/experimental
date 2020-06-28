@@ -108,7 +108,7 @@ async function trainModel(model: tf.LayersModel, inputs: tf.Tensor<tf.Rank>, lab
     return await model.fit(inputs, labels, {
         batchSize,
         epochs,
-        shuffle: false,
+        shuffle: true,
         callbacks: tfvis.show.fitCallbacks(
             { name: 'Training Performance' },
             ['loss', 'mse'],
