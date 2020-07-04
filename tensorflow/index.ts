@@ -27,12 +27,9 @@ async function getData(): Promise<MatchboxCar[]> {
         horsepower: car.Horsepower,
     }))
         .filter(car => (car.mpg != null && car.horsepower != null));
-    cleaned;
-    const xs = tf.linspace(-1, 1, 200);
-    const data = xs.arraySync().map(x => ({mpg: 4*x, horsepower: x}))
-    // const data = xs.arraySync().map(x => ({mpg: x*x, horsepower: x}))
-
-    return data;
+    return cleaned;
+    // const data = xs.arraySync().map(x => ({mpg: 4*x, horsepower: x}))
+    // return cleaned.map(({horsepower}) => ({mpg: horsepower*horsepower, horsepower}))
 }
 
 function createModel(): tf.LayersModel {
@@ -41,13 +38,12 @@ function createModel(): tf.LayersModel {
 
     // Add a single input layer
     model.add(tf.layers.dense({ inputShape: [1], units: 1, useBias: true }));
-    // model.add(tf.layers.dense({units: 50, activation: 'sigmoid'}));
-    // model.add(tf.layers.dense({units: 5, activation: 'sigmoid'}));
-    // model.add(tf.layers.dense({units: 5, activation: 'sigmoid'}));
-    // model.add(tf.layers.dense({units: 5, activation: 'sigmoid'}));
+    // model.add(tf.layers.dense({ units: 100, activation: 'sigmoid', useBias: true }));
+    model.add(tf.layers.dense({ units: 100000, activation: 'tanh', useBias: false }));
+    // model.add(tf.layers.dense({ units: 50, activation: 'softmax', useBias: true }));
 
     // Add an output layer
-    model.add(tf.layers.dense({ units: 1, useBias: true }));
+    model.add(tf.layers.dense({ units: 1, activation: undefined, useBias: false }));
 
     return model;
 }
@@ -165,24 +161,24 @@ async function testModel(model: tf.LayersModel, inputData: MatchboxCar[], normal
 async function run() {
     // Load and plot the original input data that we are going to train on.
     const data = await getData();
-    const values = data.map(d => ({
-        x: d.horsepower,
-        y: d.mpg,
-    }));
+    // const values = data.map(d => ({
+    //     x: d.horsepower,
+    //     y: d.mpg,
+    // }));
 
-    tfvis.render.scatterplot(
-        { name: 'Horsepower v MPG' },
-        { values },
-        {
-            xLabel: 'Horsepower',
-            yLabel: 'MPG',
-            height: 300
-        }
-    );
+    // tfvis.render.scatterplot(
+    //     { name: 'Horsepower v MPG' },
+    //     { values },
+    //     {
+    //         xLabel: 'Horsepower',
+    //         yLabel: 'MPG',
+    //         height: 300
+    //     }
+    // );
 
     // Create the model
     const model = createModel();
-    tfvis.show.modelSummary({ name: 'Model Summary' }, model);
+    // tfvis.show.modelSummary({ name: 'Model Summary' }, model);
 
     // Convert the data to a form we can use for training.
     const tensorData = convertToTensor(data);
@@ -197,7 +193,7 @@ async function run() {
     await testModel(model, data, tensorData);
     
     // Save model
-    await model.save("downloads://linear")
+    // await model.save("downloads://linear")
 }
 
 document.addEventListener('DOMContentLoaded', run);
