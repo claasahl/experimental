@@ -1,5 +1,4 @@
 import * as tf from "@tensorflow/tfjs"
-import * as tfvis from "@tensorflow/tfjs-vis"
 
 import data from "./data"
 
@@ -149,11 +148,9 @@ async function trainModel(model: tf.LayersModel, inputs: tf.Tensor, labels: tf.T
       batchSize,
       epochs,
       shuffle: true,
-      callbacks: tfvis.show.fitCallbacks(
-          { name: 'Training Performance' },
-          ['loss', 'mse'],
-          { height: 200, callbacks: ['onEpochEnd'], yAxisDomain: [0,0.2] }
-      )
+      callbacks: {
+        'onEpochEnd': console.log,
+      }
   });
 }
 
@@ -190,43 +187,22 @@ async function testModel(model: tf.LayersModel, sample: Data[]) {
       // return [unNormXs.dataSync(), unNormPreds.dataSync()];
       return []
   });
-
-
-  // const predictedPoints = Array.from(xs).map((val, i) => {
-  //     return { x: val, y: preds[i] }
-  // });
-
-  // const originalPoints = inputData.map(d => ({
-  //     x: d.horsepower, y: d.mpg,
-  // }));
-
-
-  // await tfvis.render.scatterplot(
-  //     { name: 'Model Predictions vs Original Data' },
-  //     { values: [originalPoints, predictedPoints], series: ['original', 'predicted'] },
-  //     {
-  //         xLabel: 'Horsepower',
-  //         yLabel: 'MPG',
-  //         height: 300
-  //     }
-  // );
 }
 
 async function main() {
     const data = await getData();
 
-    // const model = createModel();
-    // tfvis.show.modelSummary({ name: 'Model Summary' }, model);
+    const model = createModel();
 
-    // const tensorData = convertToTensor(data);
-    // const { inputs, labels } = tensorData;
-    // await trainModel(model, inputs, labels);
-    // console.log('Done Training');
-    // await model.save(`localstorage://my-model-${Date.now()}`)
+    const tensorData = convertToTensor(data);
+    const { inputs, labels } = tensorData;
+    await trainModel(model, inputs, labels);
+    console.log('Done Training');
+    await model.save(`localstorage://my-model-${Date.now()}`)
 
  
-    const modelLoaded = await tf.loadLayersModel("localstorage://my-model-1593712475905");
-    await testModel(modelLoaded, data);
+    // const modelLoaded = await tf.loadLayersModel("localstorage://my-model-1593712475905");
+    // await testModel(modelLoaded, data);
 }
 
 document.addEventListener('DOMContentLoaded', main);
